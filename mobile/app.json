@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Demonanic Prototype",
+    "slug": "demonanic-prototype",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "demonanic",
+    "android": {"package":"com.demonanic.prototype"},
+    "ios": {"bundleIdentifier":"com.demonanic.prototype"}
+  }
+}

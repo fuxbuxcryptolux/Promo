@@ -108,7 +108,7 @@ function AnimatedHero({hero,index,width,combat}) {
  </View>;
 }
 
-function Battlefield({enemies,heroes,towers,width,fieldH,shots,onAttack,combat,castleHp}) {
+function Battlefield({enemies,heroes,towers,width,fieldH,shots,onAttack,onShotDone,combat,castleHp}) {
  const laneW=width/5;
  const towerSpots=[
    {x:laneW*.55,y:fieldH*.34},{x:laneW*4.45,y:fieldH*.39},
@@ -122,7 +122,7 @@ function Battlefield({enemies,heroes,towers,width,fieldH,shots,onAttack,combat,c
    {towers.map((t,i)=><View key={t.id} style={[styles.towerField,{left:towerSpots[i].x-17,top:towerSpots[i].y}]}><Neon color={t.color} size={34} label={t.id[0].toUpperCase()}/></View>)}
    {enemies.map(e=><AnimatedEnemy key={e.id} enemy={e} width={width} fieldH={fieldH} onPress={()=>onAttack(e.id)}/>)}
    {heroes.map((h,i)=><AnimatedHero key={h.id} hero={h} index={i} width={width} combat={combat}/>)}
-   {shots.map(shot=><Projectile key={shot.id} shot={shot} onDone={id=>{}}/>)}
+   {shots.map(shot=><Projectile key={shot.id} shot={shot} onDone={onShotDone}/>)}
    <View style={styles.castleHp}><Text style={styles.small}>CASTLE {castleHp}%</Text></View>
  </View>;
 }
@@ -166,7 +166,7 @@ function Battle({go}) {
      const hi=HEROES.findIndex(h=>h.id===attacker.id);
      fromX=(hi+.5)*(fieldW/4);fromY=fieldH*.70-HEROES[hi].advance*.35;
    }
-   setShots(cur=>[...cur,{id:shotSeq.current++,fromX,fromY,toX:targetX,toY:targetY,color,damage}]);
+   setShots(cur=>[...cur,{id:shotSeq.current++,createdAt:Date.now(),fromX,fromY,toX:targetX,toY:targetY,color,damage}]);
  };
 
  useEffect(()=>{
@@ -207,7 +207,7 @@ function Battle({go}) {
      if(breached)setCastleHp(h=>Math.max(0,h-breached*2));
      enemiesRef.current=survivors;
      setEnemies(survivors);
-     setShots(curShots=>curShots.filter(s=>now-s.id<999999));
+     setShots(curShots=>curShots.filter(s=>now-s.createdAt<500));
      if(!survivors.length){setPhase("won");}
      else if(castleHp<=2||castleHp-breached*2<=0){setPhase("lost");}
    },100);
@@ -228,7 +228,7 @@ function Battle({go}) {
 
  return <SafeAreaView style={styles.safe}><Header title={phase==="scout"?"SCOUTING":"BATTLE"} onBack={()=>go("prep")}/><ScrollView contentContainerStyle={styles.battlePage}>
    {phase==="scout"?<View style={styles.countdown}><Text style={[styles.count,{color:C.yellow}]}>{count}</Text><Text style={styles.kicker}>SCOUTS ARE WATCHING</Text><Text style={styles.body}>Five-second pre-wave phase. Combat starts automatically.</Text></View>:<View style={styles.hud}><Text style={[styles.kicker,{color:C.magenta}]}>WAVE 1 // LIVE</Text><Text style={styles.small}>AUTO COMBAT ACTIVE · TAP ANY ENEMY FOR DIRECT TARGET DAMAGE</Text></View>}
-   <Battlefield enemies={enemies} heroes={HEROES} towers={TOWERS} onAttack={attack} width={fieldW} fieldH={fieldH} shots={shots} combat={phase==="combat"} castleHp={castleHp}/>
+   <Battlefield enemies={enemies} heroes={HEROES} towers={TOWERS} onAttack={attack} width={fieldW} fieldH={fieldH} shots={shots} onShotDone={id=>setShots(cur=>cur.filter(s=>s.id!==id))} combat={phase==="combat"} castleHp={castleHp}/>
    {phase==="combat"?<View style={styles.commandRow}>{HEROES.map(h=><Pressable key={h.id} onPress={()=>enemies[0]&&attack(enemies[0].id)} style={[styles.command,{borderColor:h.color}]}><Text style={{color:h.color,fontWeight:"800"}}>{h.name}</Text><Text style={styles.small}>DIRECT</Text></Pressable>)}</View>:null}
  </ScrollView></SafeAreaView>;
 }

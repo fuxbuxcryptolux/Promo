@@ -68,3 +68,8 @@ For the next APK, record 10–20 seconds from the start of the live battle and v
 9. No obvious jitter, frozen units, or console-breaking runtime errors appear.
 
 This remains an isolated mobile combat prototype. It does not replace or migrate the production web GameEngine yet.
+
+
+## Combat V2
+
+The mobile prototype now tests the combat presentation before production engine migration: smaller enemy units, smoother continuous enemy advance, automatic tower targeting, visible projectile travel, automatic hero attacks, and visible hero advance. Touch targeting remains as a direct-damage test control. This is still a prototype and does not replace the production web combat engine.

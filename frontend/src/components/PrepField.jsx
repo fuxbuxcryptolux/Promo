@@ -3,6 +3,7 @@ import { LAYOUT } from "@/game/engine";
 import { NeonButton, StatBar } from "@/components/ui-kit";
 import { slotCap, towerDerived, canAfford } from "@/game/logic";
 import { Wrench, Trash2, X } from "lucide-react";
+import { NeonSprite } from "@/components/NeonSprite";
 import * as C from "@/game/config";
 
 const { W, H, WALL_Y, GATE_Y, HERO_Y } = LAYOUT;
@@ -66,7 +67,7 @@ export default function PrepField({ state, handlers }) {
                 onClick={() => setPlacing(placing === tp ? null : tp)}
                 className={`neon-btn p-1.5 rounded-lg border bg-black/40 disabled:opacity-30 ${placing === tp ? "ring-2 ring-cyan-400" : ""}`}
                 style={{ borderColor: t.color + "66" }}>
-                <div className="w-4 h-4 rounded mx-auto mb-1" style={{ background: t.color, boxShadow: `0 0 8px ${t.color}` }} />
+                <NeonSprite kind={tp} color={t.color} size="sm" className="mx-auto mb-1" />
                 <div className="font-mono-g text-[9px] font-bold text-center" style={{ color: t.color }}>{t.name.split(" ")[0]}</div>
                 <div className="font-mono-g text-[8px] text-slate-400 text-center">{t.construction.gold}g</div>
               </button>
@@ -111,7 +112,7 @@ export default function PrepField({ state, handlers }) {
               style={{ left: pctX(pos.x), top: pctY(pos.y), width: "16%", height: "8%", borderColor: t.color,
                 pointerEvents: placing ? "none" : "auto", cursor: "grab",
                 outline: sel?.kind === "tower" && sel.idx === idx ? "2px solid #00F3FF" : "none" }}>
-              <div className="w-3.5 h-3.5 rounded" style={{ background: t.color, boxShadow: `0 0 8px ${t.color}` }} />
+              <NeonSprite kind={tw.type} color={t.color} size="sm" />
               {tw.pending > 0 && <span className="absolute -top-1 -right-1 text-[8px] text-yellow-300 animate-pulse-glow">⬆</span>}
             </button>
           );
@@ -120,8 +121,7 @@ export default function PrepField({ state, handlers }) {
         {/* heroes */}
         {state.heroes.map((h, i) => {
           const c = C.HERO_CLASSES[h.cls];
-          return <div key={h.id} className="absolute -translate-x-1/2 -translate-y-1/2 rounded"
-            style={{ left: pctX(W * ((i + 0.5) / n)), top: pctY(HERO_Y), width: "5%", height: "5%", background: c.color, boxShadow: `0 0 8px ${c.color}`, pointerEvents: "none" }} />;
+          return <div key={h.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: pctX(W * ((i + 0.5) / n)), top: pctY(HERO_Y), pointerEvents: "none" }}><NeonSprite kind={h.cls} color={c.color} size="sm" /></div>;
         })}
 
         {/* placement overlay captures taps anywhere */}

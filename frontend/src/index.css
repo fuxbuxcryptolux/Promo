@@ -112,3 +112,35 @@ body {
 
 .thin-scroll::-webkit-scrollbar { width: 6px; height: 6px; }
 .thin-scroll::-webkit-scrollbar-thumb { background: rgba(0,243,255,0.3); border-radius: 3px; }
+
+
+/* Demonanic visual layer: filled dark interiors + toxic neon silhouettes. */
+.neon-sprite{--sprite-color:#00F3FF;position:relative;display:inline-block;width:44px;height:54px;flex:none;filter:drop-shadow(0 0 7px var(--sprite-color));}
+.neon-sprite-sm{transform:scale(.72);transform-origin:center;width:40px;height:48px;}
+.neon-sprite-lg{transform:scale(1.25);transform-origin:center;width:50px;height:60px;}
+.neon-sprite>span{position:absolute;display:block;box-sizing:border-box;}
+.neon-sprite-body{left:10px;top:17px;width:24px;height:30px;background:#090c14;border:2px solid var(--sprite-color);border-radius:45% 45% 35% 35%;box-shadow:0 0 8px var(--sprite-color),inset 0 0 8px var(--sprite-color);}
+.neon-sprite-head{left:14px;top:7px;width:16px;height:16px;background:#090c14;border:2px solid var(--sprite-color);border-radius:50%;box-shadow:0 0 7px var(--sprite-color);}
+.neon-sprite-detail{background:var(--sprite-color);box-shadow:0 0 5px var(--sprite-color);}
+.neon-sprite-detail-a{left:18px;top:13px;width:3px;height:3px;border-radius:50%;}
+.neon-sprite-detail-b{left:24px;top:13px;width:3px;height:3px;border-radius:50%;}
+.neon-sprite-core{left:20px;top:29px;width:5px;height:5px;border:1px solid var(--sprite-color);border-radius:50%;background:#090c14;}
+.neon-sprite-weapon{left:33px;top:20px;width:13px;height:2px;background:var(--sprite-color);transform:rotate(-35deg);box-shadow:0 0 5px var(--sprite-color);}
+.neon-sprite-ghost .neon-sprite-body{border-radius:55% 55% 30% 30%;clip-path:polygon(0 0,100% 0,100% 70%,82% 100%,62% 78%,42% 100%,20% 78%,0 100%);}
+.neon-sprite-slime .neon-sprite-body{border-radius:55% 55% 35% 35%;clip-path:polygon(0 100%,4% 30%,25% 8%,50% 0,76% 10%,96% 32%,100% 100%);}
+.neon-sprite-goblin .neon-sprite-head{clip-path:polygon(0 25%,20% 0,38% 22%,62% 22%,80% 0,100% 25%,88% 100%,12% 100%);}
+.neon-sprite-skeleton .neon-sprite-head,.neon-sprite-zombie .neon-sprite-head,.neon-sprite-ghoul .neon-sprite-head{border-radius:35%;}
+.neon-sprite-skeleton .neon-sprite-body,.neon-sprite-zombie .neon-sprite-body,.neon-sprite-ghoul .neon-sprite-body{border-radius:25%;background:repeating-linear-gradient(0deg,#090c14 0 4px,var(--sprite-color) 5px 6px);}
+.neon-sprite-reaper .neon-sprite-head,.neon-sprite-necromancer .neon-sprite-head{clip-path:polygon(0 30%,50% 0,100% 30%,82% 100%,18% 100%);}
+.neon-sprite-demon .neon-sprite-head,.neon-sprite-behemoth .neon-sprite-head{clip-path:polygon(0 30%,20% 0,38% 25%,62% 25%,80% 0,100% 30%,90% 100%,10% 100%);border-radius:35%;}
+.neon-sprite-lieutenant .neon-sprite-body{border-radius:20% 20% 45% 45%;}
+.neon-sprite-knight .neon-sprite-body{border-radius:22%;}
+.neon-sprite-knight .neon-sprite-weapon{height:3px;width:17px;transform:rotate(-55deg);left:31px;top:13px;}
+.neon-sprite-mage .neon-sprite-head{border-radius:40%;clip-path:polygon(0 35%,50% 0,100% 35%,82% 100%,18% 100%);}
+.neon-sprite-archer .neon-sprite-weapon{width:15px;height:15px;border:2px solid var(--sprite-color);border-left-color:transparent;border-radius:50%;background:transparent;transform:none;left:30px;top:18px;box-shadow:none;}
+.neon-sprite-rogue .neon-sprite-weapon,.neon-sprite-rouge .neon-sprite-weapon{width:15px;transform:rotate(-55deg);left:31px;top:18px;}
+.neon-sprite-archer-tower .neon-sprite-body,.neon-sprite-catapult .neon-sprite-body,.neon-sprite-wizard-tower .neon-sprite-body,.neon-sprite-ballista .neon-sprite-body{left:7px;top:19px;width:30px;height:31px;border-radius:15% 15% 8% 8%;}
+.neon-sprite-archer-tower .neon-sprite-head{left:12px;top:10px;width:20px;height:13px;border-radius:50% 50% 0 0;}
+.neon-sprite-catapult .neon-sprite-weapon{left:19px;top:14px;width:22px;transform:rotate(-40deg);}
+.neon-sprite-wizard-tower .neon-sprite-head{left:12px;top:2px;width:20px;height:20px;border-radius:50% 50% 0 0;}
+.neon-sprite-ballista .neon-sprite-weapon{left:18px;top:13px;width:24px;transform:rotate(-35deg);}

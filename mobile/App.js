@@ -74,7 +74,7 @@ function Projectile({shot,onDone}) {
  return <Animated.View style={[styles.projectile,{left:shot.sx,top:shot.sy,width:length,backgroundColor:shot.color,shadowColor:shot.color,transform:[{translateX:motion.x},{translateY:motion.y},{rotate:`${angle}rad`}]},shot.kind==="magic"&&styles.magicProjectile]}/>;
 }
 
-function Battlefield({enemies,heroes,towers,shots,selectedTarget,onAttack,width}) {
+function Battlefield({enemies,heroes,towers,shots,selectedTarget,onAttack,onProjectileDone,width}) {
  const fieldH=Math.min(610,width*1.55),laneW=width/5;
  const enemySize=28;
  const heroPositions=heroes.map((h,i)=>({x:(i+.5)*(width/heroes.length)-18,y:fieldH*h.progress}));
@@ -105,7 +105,7 @@ function Battlefield({enemies,heroes,towers,shots,selectedTarget,onAttack,width}
        <View style={styles.hp}><View style={[styles.hpFill,{width:34*(h.hp/h.maxHp),backgroundColor:h.color}]}/></View>
      </MovingUnit>;
    })}
-   {shots.map(shot=><Projectile key={shot.id} shot={shot} onDone={onAttack}/>)}
+   {shots.map(shot=><Projectile key={shot.id} shot={shot} onDone={onProjectileDone}/>)}
    <View style={styles.castleHp}><Text style={styles.small}>CASTLE 100%</Text></View>
  </View>;
 }
@@ -218,7 +218,7 @@ function Battle({go}) {
  if(phase==="won")return <Results won kills={kills} go={go}/>;
  return <SafeAreaView style={styles.safe}><Header title={phase==="scout"?"SCOUTING":"BATTLE"} onBack={()=>go("prep")}/><ScrollView contentContainerStyle={styles.battlePage}>
    {phase==="scout"?<View style={styles.countdown}><Text style={[styles.count,{color:C.yellow}]}>{count}</Text><Text style={styles.kicker}>SCOUTS ARE WATCHING</Text><Text style={styles.body}>Five-second pre-wave phase. Combat begins automatically.</Text></View>:<View style={styles.hud}><Text style={[styles.kicker,{color:C.magenta}]}>WAVE 1 // LIVE</Text><Text style={styles.small}>AUTO COMBAT ACTIVE · TAP AN ENEMY TO DIRECT A HERO</Text></View>}
-   <Battlefield enemies={enemies} heroes={heroes} towers={TOWERS} shots={shots} selectedTarget={selectedTarget} onAttack={phase==="combat"?manualAttack:()=>{}} width={Math.max(300,width-24)}/>
+   <Battlefield enemies={enemies} heroes={heroes} towers={TOWERS} shots={shots} selectedTarget={selectedTarget} onAttack={phase==="combat"?manualAttack:()=>{}} onProjectileDone={impactShot} width={Math.max(300,width-24)}/>
    {phase==="combat"?<View style={styles.commandRow}>{HEROES.map(h=><View key={h.id} style={[styles.command,{borderColor:h.color}]}><Text style={{color:h.color,fontWeight:"800"}}>{h.name}</Text><Text style={styles.small}>AUTO ATTACK</Text></View>)}</View>:null}
  </ScrollView></SafeAreaView>;
 }

@@ -5,6 +5,7 @@ import { HeroCard, TowerCard } from "@/components/cards";
 import DebugPanel from "@/components/DebugPanel";
 import { NeonButton, StatBar } from "@/components/ui-kit";
 import { Coins, Wheat, Mountain, Terminal, Skull } from "lucide-react";
+import { NeonSprite } from "@/components/NeonSprite";
 import { TIME } from "@/game/config";
 import * as C from "@/game/config";
 import {
@@ -170,7 +171,7 @@ export default function Battle() {
         {state.towers.map((tw, slot) => tw ? (
           <button key={slot} onClick={() => openTowerCard(slot)} data-testid={`battle-tower-${slot}`}
             className="shrink-0 bracket rounded px-2 py-1 flex items-center gap-1">
-            <div className="w-3 h-3 rounded" style={{ background: C.TOWERS[tw.type].color, boxShadow: `0 0 8px ${C.TOWERS[tw.type].color}` }} />
+            <NeonSprite kind={tw.type} color={C.TOWERS[tw.type].color} size="sm" />
             <span className="font-mono-g text-[9px] text-slate-300">L{tw.level}</span>
           </button>
         ) : null)}
@@ -183,7 +184,7 @@ export default function Battle() {
           return (
             <button key={i} onClick={() => openHeroCard(i)} data-testid={`battle-hero-${i}`}
               className="glass-card rounded-lg p-1.5 flex flex-col items-center" style={{ borderBottom: `2px solid ${cls.color}`, opacity: h.alive ? 1 : 0.35 }}>
-              <div className="w-6 h-7 rounded mb-1" style={{ background: cls.color, boxShadow: `0 0 8px ${cls.color}` }} />
+              <NeonSprite kind={state.heroes[i].cls} color={cls.color} size="sm" className="mb-1" />
               <span className="font-mono-g text-[9px]" style={{ color: cls.color }}>{cls.name}</span>
               <StatBar frac={(h.hp || 0) / (h.maxHp || 1)} color={cls.color} height={3} />
               {state.heroes[i].manual && <span className="font-mono-g text-[8px] text-fuchsia-400">MANUAL</span>}

@@ -228,12 +228,11 @@ function Battle({go}) {
      if(breached)setCastleHp(h=>Math.max(0,h-breached*2));
      enemiesRef.current=survivors;
      setEnemies(survivors);
-     setShots(curShots=>curShots.filter(s=>now-s.createdAt<500));
      if(!survivors.length){setPhase("won");}
      else if(castleHp<=2||castleHp-breached*2<=0){setPhase("lost");}
    },100);
    return()=>clearInterval(id);
- },[phase,fieldH,fieldW,castleHp]);
+ },[phase,fieldH,fieldW,castleHp,engage]);
 
  const attack=id=>setEnemies(cur=>{
    const next=cur.map(e=>e.id===id?{...e,hp:Math.max(0,e.hp-20)}:e);

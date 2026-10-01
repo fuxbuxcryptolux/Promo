@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
-import { StatusBar } from "expo-status-bar";
 import { WebView } from "react-native-webview";
 
 const GAME_URL =
@@ -12,7 +11,6 @@ export default function App() {
 
   return (
     <View style={styles.root}>
-      <StatusBar style="light" backgroundColor="#07080d" />
       <WebView
         source={{ uri: GAME_URL }}
         style={styles.web}

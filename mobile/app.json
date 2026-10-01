@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "Demonanic",
+    "slug": "demonanic-mobile-shell",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "demonanic",
+    "android": {
+      "package": "com.demonanic.game"
+    },
+    "ios": {
+      "bundleIdentifier": "com.demonanic.game"
+    }
+  }
+}

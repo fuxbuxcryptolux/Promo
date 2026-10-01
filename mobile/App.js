@@ -186,6 +186,7 @@ function Battle({go}) {
        if(!valid.length)return;
        const target=valid.slice().sort((x,y)=>x.progress-y.progress)[0];
        if(a.type==="hero"){
+         if(!engage)return;
          const hero=HEROES.find(h=>h.id===a.id);
          const distance=target.progress;
          if(distance>a.range)return;

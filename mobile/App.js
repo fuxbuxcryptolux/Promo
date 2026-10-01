@@ -34,6 +34,21 @@ function Neon({color,size=32,label}) {
  </View>;
 }
 
+function UnitGlyph({kind,color,size=32,label}) {
+ const common={borderColor:color,shadowColor:color};
+ if(kind==="ghost") return <View style={[styles.ghostGlyph,{width:size,height:size*.9},common]}><View style={[styles.ghostBody,{backgroundColor:color+"22",borderColor:color}]}><View style={[styles.eye,{backgroundColor:color,left:size*.28}]}/><View style={[styles.eye,{backgroundColor:color,right:size*.28}]}/><View style={[styles.ghostTail,{borderColor:color}]}/></View></View>;
+ if(kind==="goblin") return <View style={[styles.goblinGlyph,{width:size,height:size},common]}><View style={[styles.goblinEar,{borderColor:color,left:0}]}/><View style={[styles.goblinEar,{borderColor:color,right:0}]}/><View style={[styles.goblinFace,{borderColor:color}]}><View style={[styles.eye,{backgroundColor:color,left:size*.27}]}/><View style={[styles.eye,{backgroundColor:color,right:size*.27}]}/></View></View>;
+ if(kind==="skeleton") return <View style={[styles.skeletonGlyph,{width:size,height:size},common]}><View style={[styles.skull,{borderColor:color}]}><View style={[styles.skullEye,{backgroundColor:color,left:size*.22}]}/><View style={[styles.skullEye,{backgroundColor:color,right:size*.22}]}/></View><View style={[styles.rib,{borderColor:color}]}/></View>;
+ if(kind==="slime") return <View style={[styles.slimeGlyph,{width:size,height:size*.8,backgroundColor:color+"33",borderColor:color},common]}><View style={[styles.eye,{backgroundColor:color,left:size*.25}]}/><View style={[styles.eye,{backgroundColor:color,right:size*.25}]}/></View>;
+ if(kind==="orc") return <View style={[styles.orcGlyph,{width:size,height:size},common]}><View style={[styles.orcHorn,{borderColor:color,left:2}]}/><View style={[styles.orcHorn,{borderColor:color,right:2}]}/><View style={[styles.orcFace,{borderColor:color}]}><View style={[styles.eye,{backgroundColor:color,left:size*.24}]}/><View style={[styles.eye,{backgroundColor:color,right:size*.24}]}/></View></View>;
+ if(kind==="knight") return <View style={[styles.knightGlyph,{width:size,height:size},common]}><View style={[styles.helm,{borderColor:color}]}><View style={[styles.visor,{backgroundColor:color}]}/></View><View style={[styles.shield,{borderColor:color}]}/></View>;
+ if(kind==="rogue") return <View style={[styles.rogueGlyph,{width:size,height:size},common]}><View style={[styles.rogueBody,{borderColor:color}]} /><View style={[styles.dagger,{backgroundColor:color,transform:[{rotate:"35deg"}]}]}/></View>;
+ if(kind==="mage") return <View style={[styles.mageGlyph,{width:size,height:size},common]}><View style={[styles.hood,{borderColor:color}]}><View style={[styles.mageFace,{backgroundColor:color+"33",borderColor:color}]}/></View><View style={[styles.staff,{backgroundColor:color}]}/></View>;
+ if(kind==="archer") return <View style={[styles.archerGlyph,{width:size,height:size},common]}><View style={[styles.bow,{borderColor:color}]}/><View style={[styles.bowString,{backgroundColor:color}]}/><View style={[styles.arrow,{backgroundColor:color}]}/></View>;
+ if(kind==="tower") return <View style={[styles.towerGlyph,{width:size,height:size},common]}><View style={[styles.towerRoof,{borderColor:color}]}/><View style={[styles.towerBase,{borderColor:color}]}><View style={[styles.towerWindow,{backgroundColor:color}]}/></View></View>;
+ return <Neon color={color} size={size} label={label}/>;
+}
+
 function Header({title,onBack}) {
  return <View style={styles.header}>
    <View style={styles.headerLeft}>{onBack?<Pressable onPress={onBack} style={styles.back}><Text style={styles.backText}>‹</Text></Pressable>:null}<Text style={styles.logo}>{title}</Text></View>
@@ -57,7 +72,7 @@ function Home({go}) {
 function Prep({go}) {
  return <SafeAreaView style={styles.safe}><Header title="PREPARATION" onBack={()=>go("home")}/><ScrollView contentContainerStyle={styles.page}>
    <View style={styles.notice}><Text style={[styles.kicker,{color:C.yellow}]}>NO PREP TIMER</Text><Text style={styles.body}>Place a tower, review the squad, then manually start the wave.</Text></View>
-   <Text style={styles.section}>TOWER SLOTS</Text><View style={styles.wrap}>{TOWERS.map(t=><View key={t.id} style={[styles.towerCard,{borderColor:t.color+"88"}]}><Neon color={t.color} size={34} label={t.id[0].toUpperCase()}/><Text style={[styles.cardTitle,{color:t.color}]}>{t.name}</Text><Text style={styles.small}>DMG {t.damage} · AUTO</Text></View>)}</View>
+   <Text style={styles.section}>TOWER SLOTS</Text><View style={styles.wrap}>{TOWERS.map(t=><View key={t.id} style={[styles.towerCard,{borderColor:t.color+"88"}]}><UnitGlyph kind="tower" color={t.color} size={34} label={t.id[0].toUpperCase()}/><Text style={[styles.cardTitle,{color:t.color}]}>{t.name}</Text><Text style={styles.small}>DMG {t.damage} · AUTO</Text></View>)}</View>
    <Text style={styles.section}>CASTLE SQUAD</Text><View style={styles.wrap}>{HEROES.map(h=><View key={h.id} style={styles.wide}><Neon color={h.color} size={36} label={h.id[0].toUpperCase()}/><View><Text style={[styles.cardTitle,{color:h.color}]}>{h.name}</Text><Text style={styles.small}>HP {h.hp}/{h.maxHp} · AUTO</Text></View></View>)}</View>
    <Pressable onPress={()=>go("battle")} style={[styles.big,{borderColor:C.magenta}]}><Text style={[styles.bigText,{color:C.magenta}]}>START WAVE</Text><Text style={styles.small}>5-SECOND SCOUT COUNTDOWN</Text></Pressable>
  </ScrollView></SafeAreaView>;
@@ -71,7 +86,7 @@ function Projectile({shot,onDone}) {
  const x=progress.interpolate({inputRange:[0,1],outputRange:[shot.fromX,shot.toX]});
  const y=progress.interpolate({inputRange:[0,1],outputRange:[shot.fromY,shot.toY]});
  const scale=progress.interpolate({inputRange:[0,.8,1],outputRange:[1,1.15,.25]});
- return <Animated.View pointerEvents="none" style={[styles.projectile,{backgroundColor:shot.color,shadowColor:shot.color,transform:[{translateX:x},{translateY:y},{scale}]}]}/>;
+ return <Animated.View pointerEvents="none" style={[styles.projectile,shot.kind==="magic"?styles.magicProjectile:styles.physicalProjectile,{backgroundColor:shot.color,shadowColor:shot.color,transform:[{translateX:x},{translateY:y},{scale},{rotate:shot.angle+"deg"}]}]}/>;
 }
 
 function AnimatedEnemy({enemy,width,fieldH,onPress,combat}) {
@@ -85,9 +100,10 @@ function AnimatedEnemy({enemy,width,fieldH,onPress,combat}) {
  const travel=fieldH*.72;
  const translateY=y.interpolate({inputRange:[0,1],outputRange:[0,travel]});
  const size=30;
+ const glyphKind=enemy.kind.toLowerCase();
  return <Pressable onPress={onPress} style={[styles.enemy,{left:enemy.lane*laneW+laneW/2-size/2,top:startY,width:size}]}>
    <Animated.View style={{transform:[{translateY}]}}>
-     <Neon color={enemy.color} size={size} label={enemy.kind[0]}/>
+     <UnitGlyph kind={glyphKind} color={enemy.color} size={size} label={enemy.kind[0]}/>
      <View style={styles.hp}><View style={[styles.hpFill,{width:size*(enemy.hp/enemy.maxHp),backgroundColor:enemy.color}]}/></View>
    </Animated.View>
  </Pressable>;
@@ -104,7 +120,7 @@ function AnimatedHero({hero,index,width,fieldH,engage}) {
  const translateY=y.interpolate({inputRange:[0,1],outputRange:[0,-travel]});
  return <View style={[styles.heroField,{left:x,top:baseTop}]}>
    <Animated.View style={{transform:[{translateY}]}}>
-     <Neon color={hero.color} size={36} label={hero.id[0].toUpperCase()}/>
+     <UnitGlyph kind={hero.id} color={hero.color} size={36} label={hero.id[0].toUpperCase()}/>
      <View style={styles.hp}><View style={[styles.hpFill,{width:36*(hero.hp/hero.maxHp),backgroundColor:hero.color}]}/></View>
    </Animated.View>
  </View>;
@@ -168,7 +184,9 @@ function Battle({go}) {
      const hi=HEROES.findIndex(h=>h.id===attacker.id);
      fromX=(hi+.5)*(fieldW/4);fromY=fieldH*.78-HEROES[hi].advance*.55;
    }
-   setShots(cur=>[...cur,{id:shotSeq.current++,createdAt:Date.now(),fromX,fromY,toX:targetX,toY:targetY,color,damage}]);
+   const kind=(attacker.id==="mage"||attacker.id==="wizard")?"magic":"physical";
+   const angle=Math.atan2(targetY-fromY,targetX-fromX)*180/Math.PI;
+   setShots(cur=>[...cur,{id:shotSeq.current++,createdAt:Date.now(),fromX,fromY,toX:targetX,toY:targetY,color,damage,kind,angle}]);
  };
 
  useEffect(()=>{
@@ -201,7 +219,7 @@ function Battle({go}) {
      if(!engage && cur.some(e=>e.progress>=.62)){ setEngage(true); }
      const moved=cur.map(e=>{
        const incoming=damageByTarget[e.id]||0;
-       const nextProgress=Math.min(.90,e.progress+.0028);
+       const nextProgress=Math.min(.90,e.progress+.006);
        return {...e,progress:nextProgress,hp:Math.max(0,e.hp-incoming)};
      });
      const dead=moved.filter(e=>e.hp<=0).length;
@@ -256,6 +274,15 @@ const styles=StyleSheet.create({
  cardTitle:{fontSize:10,fontWeight:"900",letterSpacing:1,marginTop:4},towerCard:{width:"47%",minHeight:118,backgroundColor:C.panel,borderWidth:1.5,padding:10,alignItems:"center",justifyContent:"center"},
  notice:{padding:14,borderWidth:1,borderColor:C.yellow+"55",backgroundColor:"#11100C"},
  neon:{backgroundColor:C.dark,borderWidth:2,borderRadius:9,alignItems:"center",justifyContent:"center",shadowOpacity:.85,shadowRadius:9,elevation:6},
+ghostGlyph:{alignItems:"center",justifyContent:"center"},ghostBody:{width:"82%",height:"78%",borderWidth:2,borderTopLeftRadius:14,borderTopRightRadius:14,borderBottomLeftRadius:8,borderBottomRightRadius:8,position:"relative"},ghostTail:{position:"absolute",bottom:-3,left:"15%",width:"70%",height:8,borderBottomWidth:2,borderRadius:8},
+goblinGlyph:{alignItems:"center",justifyContent:"center",position:"relative"},goblinFace:{width:"72%",height:"72%",borderWidth:2,borderRadius:10},goblinEar:{position:"absolute",top:"25%",width:"34%",height:"34%",borderWidth:2,transform:[{rotate:"45deg"}]},
+skeletonGlyph:{alignItems:"center",justifyContent:"center"},skull:{width:"72%",height:"58%",borderWidth:2,borderRadius:10,position:"relative"},skullEye:{position:"absolute",top:"35%",width:4,height:4,borderRadius:2},rib:{width:"50%",height:"25%",borderBottomWidth:2,borderTopWidth:2,marginTop:2},
+slimeGlyph:{borderWidth:2,borderRadius:12,alignItems:"center",justifyContent:"center",borderTopLeftRadius:18,borderTopRightRadius:18},orcGlyph:{alignItems:"center",justifyContent:"center",position:"relative"},orcFace:{width:"78%",height:"74%",borderWidth:2,borderRadius:8},orcHorn:{position:"absolute",top:2,width:"25%",height:"35%",borderWidth:2,transform:[{rotate:"-25deg"}]},
+knightGlyph:{alignItems:"center",justifyContent:"center"},helm:{width:"68%",height:"52%",borderWidth:2,borderRadius:8},visor:{width:"55%",height:3,position:"absolute",top:"48%"},shield:{width:"45%",height:"36%",borderWidth:2,borderRadius:4,marginTop:2},
+rogueGlyph:{alignItems:"center",justifyContent:"center"},rogueBody:{width:"48%",height:"62%",borderWidth:2,borderRadius:12},dagger:{position:"absolute",right:"12%",top:"20%",width:4,height:"65%"},
+mageGlyph:{alignItems:"center",justifyContent:"center",position:"relative"},hood:{width:"70%",height:"68%",borderWidth:2,borderRadius:16},mageFace:{width:"48%",height:"48%",borderWidth:1,borderRadius:12,margin:"auto"},staff:{position:"absolute",right:"5%",top:"5%",width:3,height:"88%"},
+archerGlyph:{alignItems:"center",justifyContent:"center",position:"relative"},bow:{width:"48%",height:"72%",borderWidth:2,borderRadius:20},bowString:{position:"absolute",width:2,height:"72%"},arrow:{position:"absolute",width:"62%",height:2,right:"5%",top:"48%"},
+towerGlyph:{alignItems:"center",justifyContent:"flex-end"},towerRoof:{width:"72%",height:"28%",borderWidth:2,transform:[{rotate:"45deg"}],marginBottom:-7},towerBase:{width:"62%",height:"60%",borderWidth:2,alignItems:"center",justifyContent:"center"},towerWindow:{width:6,height:6,borderRadius:3}
  head:{position:"absolute",width:"42%",height:"34%",top:"13%",borderWidth:1.5,borderRadius:9},eye:{position:"absolute",width:3,height:3,top:"28%",borderRadius:2},mark:{position:"absolute",bottom:3,fontSize:8,fontWeight:"900"},
  field:{backgroundColor:"#0A0D16",borderWidth:1,borderColor:"#27304A",overflow:"hidden",position:"relative"},lane:{position:"absolute",top:0,bottom:0,width:1,backgroundColor:"#243047"},
  band:{position:"absolute",left:0,right:0,height:2,borderTopWidth:2},bandText:{position:"absolute",right:6,top:-15,fontSize:8,fontWeight:"900"},
@@ -266,5 +293,5 @@ const styles=StyleSheet.create({
  countdown:{width:"100%",alignItems:"center",padding:12,borderWidth:1,borderColor:C.yellow+"55",backgroundColor:"#11100C"},count:{fontSize:52,fontWeight:"900"},
  hud:{width:"100%",paddingHorizontal:4},commandRow:{width:"100%",flexDirection:"row",gap:6},command:{flex:1,minHeight:56,borderWidth:1,alignItems:"center",justifyContent:"center",backgroundColor:C.panel},
  results:{flex:1,padding:22,justifyContent:"center",gap:18},resultBox:{backgroundColor:C.panel,borderWidth:1,borderColor:"#2B3650",padding:18,gap:13},resultLine:{color:C.white,fontSize:13,fontWeight:"800",letterSpacing:1},
- projectile:{position:"absolute",left:-5,top:-5,width:18,height:6,borderRadius:3,shadowOpacity:1,shadowRadius:9,elevation:8,zIndex:20}
+ projectile:{position:"absolute",left:-5,top:-5,shadowOpacity:1,shadowRadius:9,elevation:8,zIndex:20},physicalProjectile:{width:18,height:5,borderRadius:3},magicProjectile:{width:13,height:13,borderRadius:7}
 });

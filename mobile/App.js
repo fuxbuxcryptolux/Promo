@@ -66,22 +66,24 @@ function Prep({go}) {
 function Projectile({shot,onDone}) {
  const progress=useRef(new Animated.Value(0)).current;
  useEffect(()=>{
-   Animated.timing(progress,{toValue:1,duration:260,easing:Easing.linear,useNativeDriver:true}).start(()=>onDone(shot.id));
+   Animated.timing(progress,{toValue:1,duration:520,easing:Easing.linear,useNativeDriver:true}).start(()=>onDone(shot.id));
  },[onDone,progress,shot.id]);
  const x=progress.interpolate({inputRange:[0,1],outputRange:[shot.fromX,shot.toX]});
  const y=progress.interpolate({inputRange:[0,1],outputRange:[shot.fromY,shot.toY]});
- return <Animated.View pointerEvents="none" style={[styles.projectile,{backgroundColor:shot.color,shadowColor:shot.color,transform:[{translateX:x},{translateY:y}]}]}/>;
+ const scale=progress.interpolate({inputRange:[0,.8,1],outputRange:[1,1.15,.25]});
+ return <Animated.View pointerEvents="none" style={[styles.projectile,{backgroundColor:shot.color,shadowColor:shot.color,transform:[{translateX:x},{translateY:y},{scale}]}]}/>;
 }
 
-function AnimatedEnemy({enemy,width,fieldH,onPress}) {
- const y=useRef(new Animated.Value(0)).current;
+function AnimatedEnemy({enemy,width,fieldH,onPress,combat}) {
+ const y=useRef(new Animated.Value(enemy.progress)).current;
  useEffect(()=>{
-   Animated.timing(y,{toValue:1,duration:10500,easing:Easing.linear,useNativeDriver:true}).start();
- },[y]);
+   if(!combat){ y.setValue(enemy.progress); return; }
+   Animated.timing(y,{toValue:enemy.progress,duration:120,easing:Easing.linear,useNativeDriver:true}).start();
+ },[combat,enemy.progress,y]);
  const laneW=width/5;
  const startY=fieldH*.06;
  const travel=fieldH*.72;
- const translateY=y.interpolate({inputRange:[0,1],outputRange:[enemy.progress*fieldH,travel]});
+ const translateY=y.interpolate({inputRange:[0,1],outputRange:[0,travel]});
  const size=30;
  return <Pressable onPress={onPress} style={[styles.enemy,{left:enemy.lane*laneW+laneW/2-size/2,top:startY,width:size}]}>
    <Animated.View style={{transform:[{translateY}]}}>
@@ -91,12 +93,12 @@ function AnimatedEnemy({enemy,width,fieldH,onPress}) {
  </Pressable>;
 }
 
-function AnimatedHero({hero,index,width,combat}) {
+function AnimatedHero({hero,index,width,fieldH,combat}) {
  const y=useRef(new Animated.Value(0)).current;
  useEffect(()=>{
    if(combat) Animated.timing(y,{toValue:1,duration:2400,easing:Easing.out(Easing.cubic),useNativeDriver:true}).start();
  },[combat,y]);
- const baseTop=0;
+ const baseTop=fieldH*.78;
  const travel=hero.advance;
  const x=(index+.5)*(width/4)-22;
  const translateY=y.interpolate({inputRange:[0,1],outputRange:[0,-travel]});
@@ -120,8 +122,8 @@ function Battlefield({enemies,heroes,towers,width,fieldH,shots,onAttack,onShotDo
    {Array.from({length:6}).map((_,i)=><View key={i} style={[styles.lane,{left:i*laneW}]}/>)}
    <View style={styles.keep}><Text style={[styles.keepText,{color:C.magenta}]}>KEEP</Text><View style={[styles.castle,{borderColor:C.magenta}]}/></View>
    {towers.map((t,i)=><View key={t.id} style={[styles.towerField,{left:towerSpots[i].x-17,top:towerSpots[i].y}]}><Neon color={t.color} size={34} label={t.id[0].toUpperCase()}/></View>)}
-   {enemies.map(e=><AnimatedEnemy key={e.id} enemy={e} width={width} fieldH={fieldH} onPress={()=>onAttack(e.id)}/>)}
-   {heroes.map((h,i)=><AnimatedHero key={h.id} hero={h} index={i} width={width} combat={combat}/>)}
+   {enemies.map(e=><AnimatedEnemy key={e.id} enemy={e} width={width} fieldH={fieldH} combat={combat} onPress={()=>onAttack(e.id)}/>)}
+   {heroes.map((h,i)=><AnimatedHero key={h.id} hero={h} index={i} width={width} fieldH={fieldH} combat={combat}/>) }
    {shots.map(shot=><Projectile key={shot.id} shot={shot} onDone={onShotDone}/>)}
    <View style={styles.castleHp}><Text style={styles.small}>CASTLE {castleHp}%</Text></View>
  </View>;
@@ -164,7 +166,7 @@ function Battle({go}) {
      fromX=spots[towerIndex].x;fromY=spots[towerIndex].y+16;
    } else {
      const hi=HEROES.findIndex(h=>h.id===attacker.id);
-     fromX=(hi+.5)*(fieldW/4);fromY=fieldH*.70-HEROES[hi].advance*.35;
+     fromX=(hi+.5)*(fieldW/4);fromY=fieldH*.78-HEROES[hi].advance*.55;
    }
    setShots(cur=>[...cur,{id:shotSeq.current++,createdAt:Date.now(),fromX,fromY,toX:targetX,toY:targetY,color,damage}]);
  };
@@ -197,7 +199,7 @@ function Battle({go}) {
      });
      const moved=cur.map(e=>{
        const incoming=damageByTarget[e.id]||0;
-       const nextProgress=Math.min(.90,e.progress+.0045);
+       const nextProgress=Math.min(.90,e.progress+.0028);
        return {...e,progress:nextProgress,hp:Math.max(0,e.hp-incoming)};
      });
      const dead=moved.filter(e=>e.hp<=0).length;
@@ -262,5 +264,5 @@ const styles=StyleSheet.create({
  countdown:{width:"100%",alignItems:"center",padding:12,borderWidth:1,borderColor:C.yellow+"55",backgroundColor:"#11100C"},count:{fontSize:52,fontWeight:"900"},
  hud:{width:"100%",paddingHorizontal:4},commandRow:{width:"100%",flexDirection:"row",gap:6},command:{flex:1,minHeight:56,borderWidth:1,alignItems:"center",justifyContent:"center",backgroundColor:C.panel},
  results:{flex:1,padding:22,justifyContent:"center",gap:18},resultBox:{backgroundColor:C.panel,borderWidth:1,borderColor:"#2B3650",padding:18,gap:13},resultLine:{color:C.white,fontSize:13,fontWeight:"800",letterSpacing:1},
- projectile:{position:"absolute",left:0,top:0,width:8,height:8,borderRadius:4,shadowOpacity:1,shadowRadius:7,elevation:8,zIndex:20}
+ projectile:{position:"absolute",left:-5,top:-5,width:18,height:6,borderRadius:3,shadowOpacity:1,shadowRadius:9,elevation:8,zIndex:20}
 });

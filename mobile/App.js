@@ -45,7 +45,8 @@ function UnitGlyph({kind,color,size=32,label}) {
  if(kind==="rogue") return <View style={[styles.rogueGlyph,{width:size,height:size},common]}><View style={[styles.rogueBody,{borderColor:color}]} /><View style={[styles.dagger,{backgroundColor:color,transform:[{rotate:"35deg"}]}]}/></View>;
  if(kind==="mage") return <View style={[styles.mageGlyph,{width:size,height:size},common]}><View style={[styles.hood,{borderColor:color}]}><View style={[styles.mageFace,{backgroundColor:color+"33",borderColor:color}]}/></View><View style={[styles.staff,{backgroundColor:color}]}/></View>;
  if(kind==="archer") return <View style={[styles.archerGlyph,{width:size,height:size},common]}><View style={[styles.bow,{borderColor:color}]}/><View style={[styles.bowString,{backgroundColor:color}]}/><View style={[styles.arrow,{backgroundColor:color}]}/></View>;
- if(kind==="tower") return <View style={[styles.towerGlyph,{width:size,height:size},common]}><View style={[styles.towerRoof,{borderColor:color}]}/><View style={[styles.towerBase,{borderColor:color}]}><View style={[styles.towerWindow,{backgroundColor:color}]}/></View></View>;
+ if(kind.startsWith("tower-")) return <View style={[styles.towerGlyph,{width:size,height:size},common]}><View style={[styles.towerRoof,{borderColor:color}]}
+/><View style={[styles.towerBase,{borderColor:color}]}><View style={[styles.towerWindow,{backgroundColor:color}]}/></View></View>;
  return <Neon color={color} size={size} label={label}/>;
 }
 
@@ -72,7 +73,7 @@ function Home({go}) {
 function Prep({go}) {
  return <SafeAreaView style={styles.safe}><Header title="PREPARATION" onBack={()=>go("home")}/><ScrollView contentContainerStyle={styles.page}>
    <View style={styles.notice}><Text style={[styles.kicker,{color:C.yellow}]}>NO PREP TIMER</Text><Text style={styles.body}>Place a tower, review the squad, then manually start the wave.</Text></View>
-   <Text style={styles.section}>TOWER SLOTS</Text><View style={styles.wrap}>{TOWERS.map(t=><View key={t.id} style={[styles.towerCard,{borderColor:t.color+"88"}]}><UnitGlyph kind="tower" color={t.color} size={34} label={t.id[0].toUpperCase()}/><Text style={[styles.cardTitle,{color:t.color}]}>{t.name}</Text><Text style={styles.small}>DMG {t.damage} · AUTO</Text></View>)}</View>
+   <Text style={styles.section}>TOWER SLOTS</Text><View style={styles.wrap}>{TOWERS.map(t=><View key={t.id} style={[styles.towerCard,{borderColor:t.color+"88"}]}><UnitGlyph kind={"tower-"+t.id} color={t.color} size={34} label={t.id[0].toUpperCase()}/><Text style={[styles.cardTitle,{color:t.color}]}>{t.name}</Text><Text style={styles.small}>DMG {t.damage} · AUTO</Text></View>)}</View>
    <Text style={styles.section}>CASTLE SQUAD</Text><View style={styles.wrap}>{HEROES.map(h=><View key={h.id} style={styles.wide}><Neon color={h.color} size={36} label={h.id[0].toUpperCase()}/><View><Text style={[styles.cardTitle,{color:h.color}]}>{h.name}</Text><Text style={styles.small}>HP {h.hp}/{h.maxHp} · AUTO</Text></View></View>)}</View>
    <Pressable onPress={()=>go("battle")} style={[styles.big,{borderColor:C.magenta}]}><Text style={[styles.bigText,{color:C.magenta}]}>START WAVE</Text><Text style={styles.small}>5-SECOND SCOUT COUNTDOWN</Text></Pressable>
  </ScrollView></SafeAreaView>;
@@ -174,7 +175,7 @@ function Battle({go}) {
  const spawnShot=(attacker,target,color,damage)=>{
    const laneW=fieldW/5;
    const targetX=target.lane*laneW+laneW/2-3;
-   const targetY=fieldH*(.06+Math.min(target.progress,.72));
+   const targetY=fieldH*(.06+Math.min(target.progress,.72)*.72);
    let fromX=fieldW/2,fromY=fieldH*.70;
    if(attacker.type==="tower"){
      const towerIndex=TOWERS.findIndex(t=>t.id===attacker.id);
@@ -186,7 +187,7 @@ function Battle({go}) {
    }
    const kind=(attacker.id==="mage"||attacker.id==="wizard")?"magic":"physical";
    const angle=Math.atan2(targetY-fromY,targetX-fromX)*180/Math.PI;
-   setShots(cur=>[...cur,{id:shotSeq.current++,createdAt:Date.now(),fromX,fromY,toX:targetX,toY:targetY,color,damage,kind,angle}]);
+   setShots(cur=>[...cur,{id:shotSeq.current++,createdAt:Date.now(),fromX,fromY,toX,targetY,toY:targetY,color,damage,kind,angle,targetId:target.id}]);
  };
 
  useEffect(()=>{
@@ -195,7 +196,6 @@ function Battle({go}) {
      const now=Date.now();
      const cur=enemiesRef.current;
      if(!cur.length){clearInterval(id);return;}
-     let damageByTarget={};
      const attackers=[...TOWERS.map(t=>({type:"tower",id:t.id,damage:t.damage,cooldown:t.cooldown,range:t.range})),...HEROES.map(h=>({type:"hero",id:h.id,damage:h.damage,cooldown:h.cooldown,range:h.range}))];
      attackers.forEach(a=>{
        const ready=now-(lastFire.current[a.id]||0)>=a.cooldown;
@@ -214,13 +214,12 @@ function Battle({go}) {
          if(tower)spawnShot(a,target,tower.color,tower.damage);
        }
        lastFire.current[a.id]=now;
-       damageByTarget[target.id]=(damageByTarget[target.id]||0)+a.damage;
+       
      });
      if(!engage && cur.some(e=>e.progress>=.62)){ setEngage(true); }
      const moved=cur.map(e=>{
-       const incoming=damageByTarget[e.id]||0;
        const nextProgress=Math.min(.90,e.progress+.006);
-       return {...e,progress:nextProgress,hp:Math.max(0,e.hp-incoming)};
+       return {...e,progress:nextProgress};
      });
      const dead=moved.filter(e=>e.hp<=0).length;
      const breached=moved.filter(e=>e.progress>=.895&&e.hp>0).length;
@@ -250,7 +249,20 @@ function Battle({go}) {
 
  return <SafeAreaView style={styles.safe}><Header title={phase==="scout"?"SCOUTING":"BATTLE"} onBack={()=>go("prep")}/><ScrollView contentContainerStyle={styles.battlePage}>
    {phase==="scout"?<View style={styles.countdown}><Text style={[styles.count,{color:C.yellow}]}>{count}</Text><Text style={styles.kicker}>SCOUTS ARE WATCHING</Text><Text style={styles.body}>Five-second pre-wave phase. Combat starts automatically.</Text></View>:<View style={styles.hud}><Text style={[styles.kicker,{color:C.magenta}]}>WAVE 1 // LIVE</Text><Text style={styles.small}>{engage?"CASTLE SQUAD ENGAGED · AUTO COMBAT ACTIVE":"DEFENSE LINE ACTIVE · SQUAD HOLDS POSITION"} · TAP ANY ENEMY FOR DIRECT TARGET DAMAGE</Text></View>}
-   <Battlefield enemies={enemies} heroes={HEROES} towers={TOWERS} onAttack={attack} width={fieldW} fieldH={fieldH} shots={shots} onShotDone={id=>setShots(cur=>cur.filter(s=>s.id!==id))} combat={phase==="combat"} engage={engage} castleHp={castleHp}/>
+   <Battlefield enemies={enemies} heroes={HEROES} towers={TOWERS} onAttack={attack} width={fieldW} fieldH={fieldH} shots={shots} onShotDone={id=>{
+     const shot=shots.find(s=>s.id===id);
+     setShots(cur=>cur.filter(s=>s.id!==id));
+     if(!shot)return;
+     setEnemies(cur=>{
+       const next=cur.map(e=>e.id===shot.targetId?{...e,hp:Math.max(0,e.hp-shot.damage)}:e);
+       const dead=next.filter(e=>e.id===shot.targetId&&e.hp===0).length;
+       if(dead)setKills(k=>k+dead);
+       const survivors=next.filter(e=>e.hp>0);
+       enemiesRef.current=survivors;
+       if(!survivors.length)setPhase("won");
+       return survivors;
+     });
+   }} combat={phase==="combat"} engage={engage} castleHp={castleHp}/>
    {phase==="combat"?<View style={styles.commandRow}>{HEROES.map(h=><Pressable key={h.id} onPress={()=>enemies[0]&&attack(enemies[0].id)} style={[styles.command,{borderColor:h.color}]}><Text style={{color:h.color,fontWeight:"800"}}>{h.name}</Text><Text style={styles.small}>DIRECT</Text></Pressable>)}</View>:null}
  </ScrollView></SafeAreaView>;
 }

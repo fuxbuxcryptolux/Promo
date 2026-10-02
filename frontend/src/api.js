@@ -1,34 +1,75 @@
-import axios from "axios";
+import { supabase } from "@/lib/supabaseClient";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-export const API = `${BACKEND_URL}/api`;
-
-const client = axios.create({ baseURL: API });
-
-client.interceptors.request.use((cfg) => {
-  const token = localStorage.getItem("dm_token");
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
-  return cfg;
-});
-
-export function apiErr(e) {
-  const d = e?.response?.data?.detail;
-  if (typeof d === "string") return d;
-  if (Array.isArray(d)) return d.map((x) => x?.msg || JSON.stringify(x)).join(" ");
-  return e?.message || "Request failed";
+export function apiErr(error) {
+  return error?.message || "Request failed";
 }
 
 export const authApi = {
-  register: (username, password) => client.post("/auth/register", { username, password }),
-  login: (username, password) => client.post("/auth/login", { username, password }),
-  me: () => client.get("/auth/me"),
+  getSession: () => supabase.auth.getSession(),
+  onAuthStateChange: (callback) => supabase.auth.onAuthStateChange(callback),
+  register: (email, password, username) =>
+    supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { username: username.trim().slice(0, 18) },
+        emailRedirectTo: window.location.origin,
+      },
+    }),
+  login: (email, password) =>
+    supabase.auth.signInWithPassword({ email, password }),
+  logout: () => supabase.auth.signOut(),
 };
 
 export const gameApi = {
-  getState: () => client.get("/game/state"),
-  saveState: (state) => client.put("/game/state", { state }),
-  reward: (reward_type, provider = "mock_admob", context = {}) =>
-    client.post("/monetization/reward", { reward_type, provider, context }),
+  getState: async () => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) throw userError || new Error("Not authenticated");
+
+    const { data, error } = await supabase
+      .from("game_states")
+      .select("state")
+      .eq("user_id", userData.user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+    return { data: data ? { state: data.state } : { state: null } };
+  },
+
+  saveState: async (state) => {
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) throw userError || new Error("Not authenticated");
+
+    const nextState = {
+      ...state,
+      lastSeen: new Date().toISOString(),
+    };
+
+    const { error } = await supabase
+      .from("game_states")
+      .upsert(
+        {
+          user_id: userData.user.id,
+          state: nextState,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id" }
+      );
+
+    if (error) throw error;
+    return { data: { ok: true } };
+  },
+
+  reward: async (reward_type, provider = "mock_admob", context = {}) => ({
+    data: {
+      granted: true,
+      provider,
+      reward_type,
+      context,
+      mock: true,
+      message: `[MOCK ${provider}] reward '${reward_type}' granted.`,
+    },
+  }),
 };
 
-export default client;
+export default supabase;

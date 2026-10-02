@@ -22,7 +22,7 @@ export function Modal({ children, onClose, testid, slowed }) {
 
 const STAT_ICONS = { attack: <Swords size={13} />, defense: <Shield size={13} />, agility: <Wind size={13} />, intelligence: <Brain size={13} /> };
 
-export function HeroCard({ hero, editable, onAlloc, onPerk, onConfig, onClose, slowed }) {
+export function HeroCard({ hero, editable, onAlloc, onPerk, onConfig, onModeToggle, onClose, slowed }) {
   const cls = C.HERO_CLASSES[hero.cls];
   const d = heroDerived(hero);
   const curXp = C.HERO_XP[hero.level - 1] || 0;
@@ -80,8 +80,18 @@ export function HeroCard({ hero, editable, onAlloc, onPerk, onConfig, onClose, s
           </div>
         </div>
 
-        <div className="mb-4">
-          <div className="font-mono-g text-[10px] text-slate-400 uppercase tracking-widest mb-1">Attack Config {editable ? "" : "(edit switches to MANUAL)"}</div>
+        <div className="mb-4 p-2 rounded-lg border border-white/10 bg-black/30">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <div className="font-mono-g text-[10px] text-slate-400 uppercase tracking-widest">Control Mode</div>
+              <div className={hero.manual ? "font-mono-g text-xs font-bold text-fuchsia-400" : "font-mono-g text-xs font-bold text-green-400"}>{hero.manual ? "MANUAL — TAP AN ENEMY" : "AUTO — TARGETING AUTOMATIC"}</div>
+            </div>
+            <button onClick={onModeToggle} data-testid="hero-mode-toggle"
+              className={hero.manual ? "px-3 py-1.5 rounded border text-[10px] font-mono-g font-bold border-green-400/60 text-green-300 bg-green-500/10" : "px-3 py-1.5 rounded border text-[10px] font-mono-g font-bold border-fuchsia-400/60 text-fuchsia-300 bg-fuchsia-500/10"}>
+              {hero.manual ? "SWITCH TO AUTO" : "SWITCH TO MANUAL"}
+            </button>
+          </div>
+          <div className="font-mono-g text-[10px] text-slate-500 mb-1">Attack Config {editable ? "" : "(sets targeting behavior)"}</div>
           <div className="flex flex-wrap gap-1.5">
             {C.ATTACK_CONFIGS[hero.cls].map((cfg) => (
               <button key={cfg} onClick={() => onConfig(cfg)} data-testid={`hero-config-${cfg.replace(/\s+/g, "-").toLowerCase()}`}

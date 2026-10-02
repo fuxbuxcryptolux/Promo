@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Demonanic Test",
+    "slug": "demonanic-mobile-shell",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "demonanic-test",
+    "android": {
+      "package": "com.demonanic.game.test"
+    },
+    "ios": {
+      "bundleIdentifier": "com.demonanic.game.test"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d7d2dd46-9513-4101-962f-47353860faec"
+      }
+    }
+  }
+}

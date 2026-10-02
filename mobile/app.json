@@ -11,6 +11,11 @@
     },
     "ios": {
       "bundleIdentifier": "com.demonanic.game"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d7d2dd46-9513-4101-962f-47353860faec"
+      }
     }
   }
 }

@@ -1,49 +1,68 @@
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { authApi, apiErr } from "@/api";
 
 const AuthCtx = createContext(null);
 export const useAuth = () => useContext(AuthCtx);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);     // null = loading, false = logged out
+  const [user, setUser] = useState(null); // null = loading, false = logged out
   const [error, setError] = useState("");
 
-  const boot = useCallback(async () => {
-    const token = localStorage.getItem("dm_token");
-    if (!token) { setUser(false); return; }
-    try {
-      const { data } = await authApi.me();
-      setUser(data);
-    } catch {
-      localStorage.removeItem("dm_token");
-      setUser(false);
-    }
+  useEffect(() => {
+    let mounted = true;
+
+    authApi.getSession().then(({ data, error }) => {
+      if (!mounted) return;
+      if (error) {
+        setError(apiErr(error));
+        setUser(false);
+        return;
+      }
+      setUser(data.session?.user || false);
+    });
+
+    const {
+      data: { subscription },
+    } = authApi.onAuthStateChange((_event, session) => {
+      if (mounted) setUser(session?.user || false);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
-  useEffect(() => { boot(); }, [boot]);
-
-  const login = async (username, password) => {
+  const login = async (email, password) => {
     setError("");
-    try {
-      const { data } = await authApi.login(username, password);
-      localStorage.setItem("dm_token", data.token);
-      setUser(data.user);
-      return true;
-    } catch (e) { setError(apiErr(e)); return false; }
+    const { data, error } = await authApi.login(email.trim(), password);
+    if (error) {
+      setError(apiErr(error));
+      return false;
+    }
+    setUser(data.user);
+    return true;
   };
 
-  const register = async (username, password) => {
+  const register = async (email, password, username) => {
     setError("");
-    try {
-      const { data } = await authApi.register(username, password);
-      localStorage.setItem("dm_token", data.token);
-      setUser(data.user);
+    const { data, error } = await authApi.register(email.trim(), password, username);
+    if (error) {
+      setError(apiErr(error));
+      return false;
+    }
+
+    if (!data.session) {
+      setError("Account created. Check your email to confirm the account, then log in.");
       return true;
-    } catch (e) { setError(apiErr(e)); return false; }
+    }
+
+    setUser(data.user);
+    return true;
   };
 
-  const logout = () => {
-    localStorage.removeItem("dm_token");
+  const logout = async () => {
+    await authApi.logout();
     setUser(false);
   };
 

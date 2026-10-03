@@ -98,6 +98,24 @@ export default function Battle() {
     if (engineRef.current) engineRef.current.setSpeed(1); setSlowed(false);
   };
   const openHeroCard = (i) => { setOpenHero(i); triggerSlow(); };
+  const toggleHeroMode = (i) => {
+    const next = !state.heroes[i].manual;
+    state.heroes[i].manual = next;
+    if (simRef.current?.heroes[i]) simRef.current.heroes[i].manual = next;
+    engineRef.current?.setHeroManual(i, next);
+    forceTick((t) => t + 1);
+  };
+  const handleBattlefieldTap = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas?.getBoundingClientRect();
+    if (!canvas || !rect) return;
+    const x = ((event.clientX - rect.left) / rect.width) * LAYOUT.W;
+    const y = ((event.clientY - rect.top) / rect.height) * LAYOUT.H;
+    state.heroes.forEach((hero, i) => {
+      if (hero.manual) engineRef.current?.manualTarget(i, x, y);
+    });
+    forceTick((t) => t + 1);
+  };
   const openTowerCard = (slot) => { setOpenTower(slot); triggerSlow(); };
   const closeCard = () => { setOpenHero(null); setOpenTower(null); endSlow(); };
 
@@ -154,6 +172,7 @@ export default function Battle() {
       {/* battlefield */}
       <div className="flex-1 flex items-center justify-center bg-black relative overflow-hidden min-h-0">
         <canvas ref={canvasRef} width={LAYOUT.W} height={LAYOUT.H} data-testid="battlefield-canvas"
+          onClick={handleBattlefieldTap}
           className="h-full max-h-full" style={{ aspectRatio: `${LAYOUT.W}/${LAYOUT.H}`, imageRendering: "auto" }} />
 
         {phase === "scout" && (
@@ -195,7 +214,8 @@ export default function Battle() {
       {openHero != null && sim && (
         <HeroCard hero={sim.heroes[openHero]} editable={false} slowed={slowed}
           onAlloc={() => {}} onPerk={() => {}}
-          onConfig={(cfg) => { sim.heroes[openHero].attackConfig = cfg; sim.heroes[openHero].manual = true; state.heroes[openHero].manual = true; forceTick((t) => t + 1); }}
+          onModeToggle={() => toggleHeroMode(openHero)}
+          onConfig={(cfg) => { sim.heroes[openHero].attackConfig = cfg; state.heroes[openHero].attackConfig = cfg; forceTick((t) => t + 1); }}
           onClose={closeCard} />
       )}
       {openTower != null && sim && sim.towers[openTower] && (

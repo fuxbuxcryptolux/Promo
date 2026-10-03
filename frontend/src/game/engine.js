@@ -52,7 +52,7 @@ export class Engine {
     this.heroes = sim.heroes.map((h, i) => {
       const d = heroDerived(h);
       const x = W * ((i + 0.5) / n);
-      return { i, ref: h, x, y: HERO_Y, home: { x, y: HERO_Y }, d, cd: 0, alive: h.hp > 0, protect: 0 };
+      return { i, ref: h, x, y: HERO_Y, home: { x, y: HERO_Y }, d, cd: 0, alive: h.hp > 0, protect: 0, manualTarget: null };
     });
 
     // tower runtime (free placement: use each tower's own x,y)
@@ -72,6 +72,27 @@ export class Engine {
   }
   stop() { this.running = false; }
   setSpeed(s) { this.speed = s; }
+
+  setHeroManual(index, enabled) {
+    const h = this.heroes[index];
+    if (!h) return;
+    h.ref.manual = !!enabled;
+    if (!enabled) h.manualTarget = null;
+  }
+
+  manualTarget(index, x, y) {
+    const h = this.heroes[index];
+    if (!h || !h.ref.manual || !h.alive) return false;
+    let target = null, best = 52;
+    for (const e of this.active) {
+      if (e.hp <= 0) continue;
+      const d = Math.hypot(e.x - x, e.y - y);
+      if (d <= best) { best = d; target = e; }
+    }
+    if (!target) return false;
+    h.manualTarget = target;
+    return true;
+  }
 
   injectEnemy(e) {
     e.x = laneX(pickLane(this, e)); e.y = 12;
@@ -142,7 +163,7 @@ export class Engine {
         continue;
       }
       if (!breached) { this._returnHome(h, dt); continue; }
-      const target = this._selectTarget(h);
+      const target = h.ref.manual ? (h.manualTarget && h.manualTarget.hp > 0 ? h.manualTarget : null) : this._selectTarget(h);
       if (melee) {
         if (target) {
           const dist = Math.hypot(target.x - h.x, target.y - h.y) || 1;
@@ -155,6 +176,7 @@ export class Engine {
       } else if (h.cd <= 0 && target) {
         this._fire("H" + h.i, h, target, h.d, true); h.cd = h.d.rate;
       }
+      if (h.ref.manual && h.manualTarget && h.manualTarget.hp <= 0) h.manualTarget = null;
     }
 
     // projectiles
